@@ -51,11 +51,13 @@ int main(int argc, char** argv) {
 		cv::imshow("filtered", mask);
 		cv::waitKey(0);
 		
+		const int DELTA = 5;
 		std::vector<cv::Vec4i> lines;
 		cv::HoughLinesP(mask, lines, 1, CV_PI/180, 150);
 		for(size_t i = 0; i < lines.size(); i++) {
 		  cv::Vec4i l = lines[i];
-		  line(mask, cv::Point(l[0], l[1]), cv::Point(l[2], l[3]), cv::Scalar(0,0,255), 3, CV_AA);
+		  cv::line(mask, cv::Point(l[0], l[1]), cv::Point(l[2], l[3]), cv::Scalar(0,0,255), 3, CV_AA);
+		  
 		}
 
 		cv::imshow("filtered", mask);
