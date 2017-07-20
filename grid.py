@@ -38,7 +38,7 @@ def line_intersection(line1, line2):
     d = (det(*line1), det(*line2))
     x = det(d, xdiff) / div
     y = det(d, ydiff) / div
-    return x, y
+    return [x, y]
 
 def solve_puzzle():
     pass
@@ -101,17 +101,14 @@ def transform_image(img):
     top_right    = line_intersection(top, right)
     bottom_left  = line_intersection(bottom, left)
     bottom_right = line_intersection(bottom, right)
-
-    DELTA_BUFFER = 5 # leaves gap on the sides
-    left   = min(top_left[0],  bottom_left[0])  - DELTA_BUFFER
-    right  = max(top_right[0], bottom_right[0]) + DELTA_BUFFER
-    top    = min(top_left[1], top_right[1])     - DELTA_BUFFER
-    bottom = max(top_left[1], bottom_left[1])   + DELTA_BUFFER
     
-    crop = img[top:bottom, left:right]
+    pts1 = np.float32([top_left,top_right,bottom_left,bottom_right])
+    pts2 = np.float32([[0,0],[300,0],[0,300],[300,300]])
+    M   = cv2.getPerspectiveTransform(pts1, pts2)
+    dst = cv2.warpPerspective(img, M, (300,300))
 
     #------------------------------------------------------------------------- #
-    cv2.imshow("sudoku", crop)
+    cv2.imshow("sudoku", dst)
     cv2.waitKey(0)
 
 def main(fn):
