@@ -14,24 +14,30 @@ def create_from_image():
 
 def transform_image(img):
     size = 5
-    kernel = np.ones((size,size),np.float32)/(size ** 2)
-    print(kernel)
-    smoothed = cv2.filter2D(img,-1,kernel)
+    smooth_kernel = np.ones((size,size),np.float32)/(size ** 2)
+    smoothed = cv2.filter2D(img,-1,smooth_kernel)
     thresh = cv2.adaptiveThreshold(smoothed, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,\
         cv2.THRESH_BINARY, 11, 2)
-    connectivity = 4
-    output = cv2.connectedComponentsWithStats(thresh, connectivity, cv2.CV_32S)
+    edges = cv2.Canny(thresh,100,200)
+    lines = cv2.HoughLines(edges,1,np.pi/180,150)
+    
+    for line in lines:
+        rho, theta = line[0]
 
-    num_labels = output[0]
-    labels = output[1]
-    sizes = np.array([np.sum(labels == label) for label in range(num_labels)])
-    # label_with_sizes = dict(zip(range(num_labels), sizes))
+        a = np.cos(theta)
+        b = np.sin(theta)
+        x0 = a*rho
+        y0 = b*rho
+        x1 = int(x0 + 1000*(-b))
+        y1 = int(y0 + 1000*(a))
+        x2 = int(x0 - 1000*(-b))
+        y2 = int(y0 - 1000*(a))
+        cv2.line(img,(x1,y1),(x2,y2),(0,0,255),2)
 
-    sorted_size_indices = np.argsort(sizes)
-    border_index = labels[sorted_size_indices[9]]
-    filtered_img = (labels == border_index).astype(np.float32)
+    cv2.imshow("edges", edges)
+    cv2.waitKey(0)
 
-    cv2.imshow("sudoku", filtered_img)
+    cv2.imshow("sudoku", img)
     cv2.waitKey(0)
 
 def main(fn):
