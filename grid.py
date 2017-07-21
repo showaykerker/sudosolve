@@ -40,12 +40,6 @@ def line_intersection(line1, line2):
     y = det(d, ydiff) / div
     return [x, y]
 
-def solve_puzzle():
-    pass
-
-def create_from_image():
-    pass
-
 def transform_image(img):
     size = 5
     smooth_kernel = np.ones((size,size),np.float32)/(size ** 2)
@@ -96,24 +90,46 @@ def transform_image(img):
     #------------------------------------------------------------------------- #
     # Crops the image   #
     #------------------------------------------------------------------------- #
-
     top_left     = line_intersection(top, left)
     top_right    = line_intersection(top, right)
     bottom_left  = line_intersection(bottom, left)
     bottom_right = line_intersection(bottom, right)
     
-    pts1 = np.float32([top_left,top_right,bottom_left,bottom_right])
-    pts2 = np.float32([[0,0],[300,0],[0,300],[300,300]])
-    M   = cv2.getPerspectiveTransform(pts1, pts2)
-    dst = cv2.warpPerspective(img, M, (300,300))
+    pts1   = np.float32([top_left,top_right,bottom_left,bottom_right])
+    pts2   = np.float32([[0,0],[300,0],[0,300],[300,300]])
+    M      = cv2.getPerspectiveTransform(pts1, pts2)
+    warped = cv2.warpPerspective(thresh, M, (300,300))
+    return warped
 
-    #------------------------------------------------------------------------- #
-    cv2.imshow("sudoku", dst)
+def board_from_image(img):
+    edges = cv2.Canny(img,100,200)
+    lines = cv2.HoughLines(edges,1,np.pi/180,150)
+    for line in lines:
+        rho, theta = line[0]
+
+        a = np.cos(theta)
+        b = np.sin(theta)
+        x0 = a*rho
+        y0 = b*rho
+        x1 = int(x0 + 1000*(-b))
+        y1 = int(y0 + 1000*(a))
+        x2 = int(x0 - 1000*(-b))
+        y2 = int(y0 - 1000*(a))
+
+        cv2.line(img,(x1,y1),(x2,y2), 255)
+
+    cv2.imshow("sudoku", img)
     cv2.waitKey(0)
+
+def solve_puzzle(board):
+    pass
 
 def main(fn):
     image = cv2.imread(fn, 0)
-    transform_image(image)
+    warped = transform_image(image)
+    
+    board = board_from_image(warped)
+    solve_puzzle(board)
 
 if __name__ == "__main__":
     filename = "sudoku.jpg"
