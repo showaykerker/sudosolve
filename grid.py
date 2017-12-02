@@ -7,6 +7,8 @@ from operator import itemgetter
 import numpy as np
 import cv2
 
+from solve import solve
+
 def extrema_pts(comp_vals, fn, xs, ys):
     """
     Description: Given comparison array and function, finds the extremum and
@@ -118,18 +120,16 @@ def board_from_image(img):
 
         cv2.line(img,(x1,y1),(x2,y2), 255)
 
-    cv2.imshow("sudoku", img)
-    cv2.waitKey(0)
-
-def solve_puzzle(board):
-    pass
-
+    cv2.imsave("sudoku", img)
+    
 def main(fn):
     image = cv2.imread(fn, 0)
     warped = transform_image(image)
-    
+    cv2.imsave("warped", warped)
+
     board = board_from_image(warped)
-    solve_puzzle(board)
+    print(board)
+    solve(board)
 
 if __name__ == "__main__":
     filename = "sudoku.jpg"

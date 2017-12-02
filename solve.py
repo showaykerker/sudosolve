@@ -36,7 +36,7 @@ def is_valid(board):
             return False
     return True
 
-def solve(board,i,j):
+def _solve(board,i,j):
     if (i,j) == (9,0):
         if is_valid(board):
             return board
@@ -53,14 +53,17 @@ def solve(board,i,j):
         if board[i][j] == 0:
             for possible in range(1,10):
                 board[i][j] = possible
-                if solve(board,next_i,next_j) is not None:
+                if _solve(board,next_i,next_j) is not None:
                     return board
             board[i][j] = 0
             return None
         else:
-            return solve(board,next_i,next_j)
+            return _solve(board,next_i,next_j)
     else:
         return None
+
+def solve(board):
+    return _solve(board,0,0)
 
 if __name__ == "__main__":
     board = [
@@ -77,4 +80,4 @@ if __name__ == "__main__":
         [0,0,2, 0,5,0, 1,4,0],
     ]
 
-    print(solve(board,0,0))
+    print(solve(board))
