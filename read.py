@@ -56,9 +56,9 @@ def extract_board(img):
     best_rect = cv2.approxPolyDP(board_contour, .02 * board_perim, True)
     form_rect = convert_form(best_rect)
 
-    transform_dest = np.array([[0,0],[449,0],[449,449],[0,449]], np.float32)
+    transform_dest = np.array([[0,0],[251,0],[251,251],[0,251]], np.float32)
     transfrom = cv2.getPerspectiveTransform(form_rect,transform_dest)
-    return cv2.warpPerspective(gray,transfrom,(450,450))
+    return cv2.warpPerspective(gray,transfrom,(252,252))
 
 def main(fn):
     img = cv2.imread(fn)
@@ -67,10 +67,16 @@ def main(fn):
     text_board = [[] for _ in range(9)]
     for i in range(9):
         for j in range(9):
-            box = board[(i*50):((i+1)*50),(j*50):((j+1)*50)]
-            cv2.imwrite("test.jpg", box)
+            box = board[(i*28):((i+1)*28),(j*28):((j+1)*28)]
+            blur_box = cv2.GaussianBlur(box, (5,5),0)
+            thresh = cv2.adaptiveThreshold(blur_box,255,
+                cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY,11,2)
 
-    cv2.imwrite("result.jpg", edges)
+            if i == 1 and j == 0:
+                cv2.imwrite("test.jpg", thresh)
+
+    cv2.imwrite("result.jpg", board)
 
 if __name__ == "__main__":
     main("sudoku.jpg")
+    # cv2.putText(img,'OpenCV Tuts!',(10,500), font, 6, (200,255,155), 13, cv2.LINE_AA)
