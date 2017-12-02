@@ -30,8 +30,22 @@ def convert_form(feature):
     unused.remove(bottom_right_ind)
     unused.remove(top_right_ind)
     bottom_left_ind = list(unused)[0]
-    return np.array([feature[top_left_ind],feature[top_right_ind],
-            feature[bottom_right_ind],feature[bottom_left_ind]])
+    return np.array([feature[top_left_ind][0],feature[top_right_ind][0],
+            feature[bottom_right_ind][0],feature[bottom_left_ind][0]],np.float32)
+
+def rectify(h):
+    h = h.reshape((4,2))
+    hnew = np.zeros((4,2),dtype = np.float32)
+ 
+    add = h.sum(1)
+    hnew[0] = h[np.argmin(add)]
+    hnew[2] = h[np.argmax(add)]
+         
+    diff = np.diff(h,axis = 1)
+    hnew[1] = h[np.argmin(diff)]
+    hnew[3] = h[np.argmax(diff)]
+  
+    return hnew
 
 def main(fn):
     img    = cv2.imread(fn)
@@ -60,8 +74,11 @@ def main(fn):
     best_rect = cv2.approxPolyDP(board_contour, .02 * board_perim, True)
     form_rect = convert_form(best_rect)
 
-    cv2.drawContours(img, [form_rect], 0, (0,255,0), 3)
-    cv2.imwrite("result.jpg", img)
+    transform_dest = np.array([[0,0],[449,0],[449,449],[0,449]], np.float32)
+    transfrom = cv2.getPerspectiveTransform(form_rect,transform_dest)
+    warp = cv2.warpPerspective(gray,transfrom,(450,450))
+
+    cv2.imwrite("result.jpg", warp)
 
 if __name__ == "__main__":
     main("sudoku.jpg")
