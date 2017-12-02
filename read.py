@@ -8,9 +8,6 @@ that is present in the image
 import cv2
 import numpy as np
 
-def extract_board(img):
-    pass
-
 def convert_form(feature):
     # order has to be:
     # [top_left, top_right, bottom_right, bottom_left]
@@ -33,22 +30,7 @@ def convert_form(feature):
     return np.array([feature[top_left_ind][0],feature[top_right_ind][0],
             feature[bottom_right_ind][0],feature[bottom_left_ind][0]],np.float32)
 
-def rectify(h):
-    h = h.reshape((4,2))
-    hnew = np.zeros((4,2),dtype = np.float32)
- 
-    add = h.sum(1)
-    hnew[0] = h[np.argmin(add)]
-    hnew[2] = h[np.argmax(add)]
-         
-    diff = np.diff(h,axis = 1)
-    hnew[1] = h[np.argmin(diff)]
-    hnew[3] = h[np.argmax(diff)]
-  
-    return hnew
-
-def main(fn):
-    img    = cv2.imread(fn)
+def extract_board(img):
     gray   = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     blur   = cv2.GaussianBlur(gray, (5,5),0)
     thresh = cv2.adaptiveThreshold(blur,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,\
@@ -76,9 +58,19 @@ def main(fn):
 
     transform_dest = np.array([[0,0],[449,0],[449,449],[0,449]], np.float32)
     transfrom = cv2.getPerspectiveTransform(form_rect,transform_dest)
-    warp = cv2.warpPerspective(gray,transfrom,(450,450))
+    return cv2.warpPerspective(gray,transfrom,(450,450))
 
-    cv2.imwrite("result.jpg", warp)
+def main(fn):
+    img = cv2.imread(fn)
+    board = extract_board(img)
+
+    text_board = [[] for _ in range(9)]
+    for i in range(9):
+        for j in range(9):
+            box = board[(i*50):((i+1)*50),(j*50):((j+1)*50)]
+            cv2.imwrite("test.jpg", box)
+
+    cv2.imwrite("result.jpg", edges)
 
 if __name__ == "__main__":
     main("sudoku.jpg")
